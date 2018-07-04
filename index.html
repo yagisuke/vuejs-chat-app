@@ -2,38 +2,20 @@
 <html>
 <head>
   <title>vuejs chat app</title>
-  <script src="https://unpkg.com/vue"></script>
-  <script src="https://www.gstatic.com/firebasejs/4.12.0/firebase.js"></script>
-  <script src="https://unpkg.com/native-toast@1.2.1/dist/native-toast.js"></script>
-  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://unpkg.com/native-toast@1.2.1/dist/native-toast.css">
+  <script src="https://unpkg.com/vue"></script>>
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 </head>
 <body>
 <div id="chat" class="container">
-  <h1>Vue School Chat Room</h1>
-  <!-- Messages -->
+  <h1>vuejs chat app</h1>
   <div v-for="message in messages" class="card">
     <div class="card-body">
-      <!-- nickname -->
       <h6 class="card-subtitle mb-2 text-muted">{{ message.nickname }}</h6>
-      <!-- content -->
-      <p v-if="message !== editingMessage" class="card-text">{{ message.text }}</p>
-      <textarea v-else v-model="messageText" class="form-control"></textarea>
-      <!-- actions -->
-      <div v-if="message !== editingMessage">
-        <a @click.prevent="deleteMessage(message)" href="#" class="card-link">delete</a>
-        <a @click.prevent="editMessage(message)" href="#" class="card-link">edit</a>
-      </div>
-      <div v-else>
-        <a @click.prevent="cancelEditing" href="#" class="card-link">cancel</a>
-        <a @click.prevent="updateMessage" href="#" class="card-link">update</a>
-      </div>
+      <p class="card-text">{{ message.text }}</p>
     </div>
   </div>
-
   <hr>
-  <!-- New Message -->
-  <form v-if="!editingMessage" @submit.prevent="storeMessage">
+  <form @submit.prevent="storeMessage">
     <div class="form-group">
       <label>Message:</label>
       <textarea v-model="messageText" class="form-control"></textarea>
@@ -46,80 +28,22 @@
   </form>
 </div>
 
-
 <script type="text/javascript">
-  const config = {
-    apiKey: "AIzaSyCIretB6FXPfHmk3Ib5zokwZ43FVjGZbc0",
-    authDomain: "vue-school-chat-room.firebaseapp.com",
-    databaseURL: "https://vue-school-chat-room.firebaseio.com",
-    projectId: "vue-school-chat-room",
-    storageBucket: "vue-school-chat-room.appspot.com",
-    messagingSenderId: "425342500253"
-  }
-  firebase.initializeApp(config)
-  const database = firebase.database()
-  const messagesRef = database.ref('messages')
   new Vue({
     el: "#chat",
     data: {
       messages: [],
       messageText: '',
-      nickname: 'hootlex',
-      editingMessage: null
+      nickname: 'yagisuke',
     },
     methods: {
-      storeMessage () {
-        messagesRef.push({text: this.messageText, nickname: this.nickname})
+      storeMessage() {
+        this.messages.push({
+          text: this.messageText,
+          nickname: this.nickname
+        })
         this.messageText = ''
-      },
-      deleteMessage (message) {
-        messagesRef.child(message.id).remove()
-      },
-      editMessage (message) {
-        this.editingMessage = message
-        this.messageText = message.text
-      },
-      cancelEditing () {
-        this.editingMessage = null
-        this.messageText = ''
-      },
-      updateMessage () {
-        messagesRef.child(this.editingMessage.id).update({text: this.messageText})
-        this.cancelEditing()
       }
-    },
-    created () {
-      // value = snapshot.val() | key = snapshot.key
-      messagesRef.on('child_added', snapshot => {
-        this.messages.push({...snapshot.val(), id: snapshot.key})
-        if (snapshot.val().nickname !== this.nickname) {
-          nativeToast({
-              message: `New message by ${snapshot.val().nickname}`,
-              type: 'success'
-          })
-        }
-      })
-      messagesRef.on('child_removed', snapshot => {
-        const deletedMessage = this.messages.find(message => message.id === snapshot.key)
-        const index = this.messages.indexOf(deletedMessage)
-        this.messages.splice(index, 1)
-        if (snapshot.val().nickname !== this.nickname) {
-          nativeToast({
-              message: `Message deleted by ${snapshot.val().nickname}`,
-              type: 'warning'
-          })
-        }
-      })
-      messagesRef.on('child_changed', snapshot => {
-        const updatedMessage = this.messages.find(message => message.id === snapshot.key)
-        updatedMessage.text = snapshot.val().text
-        if (snapshot.val().nickname !== this.nickname) {
-          nativeToast({
-              message: `Message edited by ${snapshot.val().nickname}`,
-              type: 'info'
-          })
-        }
-      })
     }
   })
 </script>
