@@ -3,6 +3,7 @@
 <head>
   <title>vuejs chat app</title>
   <script src="https://unpkg.com/vue"></script>
+  <script src="https://www.gstatic.com/firebasejs/5.2.0/firebase.js"></script>
   <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
 </head>
 <body>
@@ -29,6 +30,19 @@
 </div>
 
 <script type="text/javascript">
+  // Initialize Firebase
+  const config = {
+    apiKey: 'hogehoge',
+    authDomain: 'hogehoge',
+    databaseURL: 'hogehoge',
+    projectId: 'hogehoge',
+    storageBucket: 'hogehoge',
+    messagingSenderId: 'hogehoge'
+  }
+  firebase.initializeApp(config)
+
+  const database = firebase.database()  
+
   new Vue({
     el: "#chat",
     data: {
@@ -44,6 +58,11 @@
         })
         this.messageText = ''
       }
+    },
+    created() {
+      database.ref('messages').on('child_added', (snapshot) => {
+        this.messages.push(snapshot.val())
+      })
     }
   })
 </script>
