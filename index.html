@@ -13,10 +13,11 @@
     <div class="card-body">
       <h6 class="card-subtitle mb-2 text-muted">{{ message.nickname }}</h6>
       <p class="card-text">{{ message.text }}</p>
+      <a @click.prevent="deleteMessage(message)" href="#" class="card-link">delete</a>
     </div>
   </div>
   <hr>
-  <form @submit.prevent="storeMessage">
+  <form @submit.prevent="postMessage">
     <div class="form-group">
       <label>Message:</label>
       <textarea v-model="messageText" class="form-control"></textarea>
@@ -52,19 +53,23 @@
       nickname: 'yagisuke',
     },
     created() {
-      messagesRef.on('child_added', (snapshot) => {
-        this.messages.push(snapshot.val())
+      messagesRef.on('child_added', snapshot => {
+        this.messages.push({ ...snapshot.val(), id: snapshot.key })
+      })
+      messagesRef.on('child_removed', snapshot => {
+        console.log(snapshot.val())
+        const deletedMessage = this.messages.find(message => message.id === snapshot.key)
+        const index = this.messages.indexOf(deletedMessage)
+        this.messages.splice(index, 1)
       })
     },
     methods: {
-      storeMessage() {
-        const state = {
-          text: this.messageText,
-          nickname: this.nickname
-        }
-
-        messagesRef.push(state)
+      postMessage() {
+        messagesRef.push({ text: this.messageText, nickname: this.nickname })
         this.messageText = ''
+      },
+      deleteMessage(message) {
+        messagesRef.child(message.id).remove()
       }
     }
   })
