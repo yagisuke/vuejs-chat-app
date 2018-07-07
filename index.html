@@ -12,12 +12,20 @@
   <div v-for="message in messages" class="card">
     <div class="card-body">
       <h6 class="card-subtitle mb-2 text-muted">{{ message.nickname }}</h6>
-      <p class="card-text">{{ message.text }}</p>
-      <a @click.prevent="deleteMessage(message)" href="#" class="card-link">delete</a>
+      <p v-if="message !== editingMessage" class="card-text">{{ message.text }}</p>
+      <textarea v-else v-model="messageText" class="form-control"></textarea>
+      <div v-if="message !== editingMessage">
+        <a @click.prevent="deleteMessage(message)" href="#" class="card-link">delete</a>
+        <a @click.prevent="editMessage(message)" href="#" class="card-link">edit</a>
+      </div>
+      <div v-else>
+        <a @click.prevent="cancelEditing" href="#" class="card-link">cancel</a>
+        <a @click.prevent="updateMessage" href="#" class="card-link">update</a>
+      </div>
     </div>
   </div>
   <hr>
-  <form @submit.prevent="postMessage">
+  <form v-if="!editingMessage" @submit.prevent="postMessage">
     <div class="form-group">
       <label>Message:</label>
       <textarea v-model="messageText" class="form-control"></textarea>
@@ -51,6 +59,7 @@
       messages: [],
       messageText: '',
       nickname: 'yagisuke',
+      editingMessage: null
     },
     created() {
       messagesRef.on('child_added', snapshot => {
@@ -61,6 +70,10 @@
         const index = this.messages.indexOf(deletedMessage)
         this.messages.splice(index, 1)
       })
+      messagesRef.on('child_changed', snapshot => {
+        const updatedMessage = this.messages.find(message => message.id === snapshot.key)
+        updatedMessage.text = snapshot.val().text
+      })
     },
     methods: {
       postMessage() {
@@ -69,6 +82,18 @@
       },
       deleteMessage(message) {
         messagesRef.child(message.id).remove()
+      },
+      editMessage(message) {
+        this.editingMessage = message
+        this.messageText = message.text
+      },
+      cancelEditing() {
+        this.editingMessage = null,
+        this.messageText = ''
+      },
+      updateMessage() {
+        messagesRef.child(this.editingMessage.id).update({ text: this.messageText })
+        this.cancelEditing()
       }
     }
   })
