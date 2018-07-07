@@ -57,7 +57,6 @@
         this.messages.push({ ...snapshot.val(), id: snapshot.key })
       })
       messagesRef.on('child_removed', snapshot => {
-        console.log(snapshot.val())
         const deletedMessage = this.messages.find(message => message.id === snapshot.key)
         const index = this.messages.indexOf(deletedMessage)
         this.messages.splice(index, 1)
